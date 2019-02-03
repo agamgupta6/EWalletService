@@ -1,0 +1,33 @@
+{
+    "generator-jhipster": {
+        "promptValues": {
+            "packageName": "com.pichincha"
+        },
+        "jhipsterVersion": "5.7.2",
+        "applicationType": "monolith",
+        "baseName": "EWalletService",
+        "packageName": "com.pichincha",
+        "packageFolder": "com/pichincha",
+        "serverPort": "8080",
+        "authenticationType": "jwt",
+        "cacheProvider": "ehcache",
+        "enableHibernateCache": true,
+        "websocket": "spring-websocket",
+        "databaseType": "sql",
+        "devDatabaseType": "h2Disk",
+        "prodDatabaseType": "mysql",
+        "searchEngine": false,
+        "messageBroker": false,
+        "serviceDiscoveryType": false,
+        "buildTool": "maven",
+        "enableSwaggerCodegen": false,
+        "jwtSecretKey": "MmZlMTQzOGNiYzE3NDY2YWVlOTUwZjcyODlmM2UxODdmNDg2NmU4MWQwZmU1ZTE3ZmM5ZDAyNjc3ZjFhZWEwZTM4YjJjYTE4YzQxYzRiMjMyNGFhZWVlNzcyODVlMWMxMjcwOGIwMmZjOWYxMjJhZjdlMGU4MzM3ZjNmNGJkMjI=",
+        "clientFramework": "angularX",
+        "useSass": true,
+        "clientPackageManager": "npm",
+        "testFrameworks": [],
+        "jhiPrefix": "jhi",
+        "otherModules": [],
+        "enableTranslation": false
+    }
+}
