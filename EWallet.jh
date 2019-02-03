@@ -1,0 +1,42 @@
+
+
+entity Wallet {
+	number String required,
+	date Instant required,
+    identification String required,
+    mobile String required,
+    email String required,
+    money Float,
+    account String,
+    status WalletStatus
+}
+
+entity Repository{
+id String,
+}
+
+entity Transaction{
+id String,
+categoty String,
+amount Float,
+type TransactionType,
+date ZonedDateTime,
+}
+
+enum WalletStatus {
+    ACTIVE, BLOCKED, PROCESSING
+  }
+  
+
+enum TransactionType {
+    WALLET_TO_WALLET, WALLET_TO_ACCOUNT, ACCOUNT_TO_WALLET
+  }
+  
+  
+relationship ManyToOne {
+	Wallet{user(login)} to User,
+    Repository{user(login)} to User,
+    Repository{transaction(id)} to Transaction
+}
+
+
