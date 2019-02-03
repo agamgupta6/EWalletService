@@ -11,7 +11,7 @@ entity Wallet {
     status WalletStatus
 }
 
-entity Repository{
+entity File{
 id String,
 }
 
@@ -34,9 +34,10 @@ enum TransactionType {
   
   
 relationship ManyToOne {
-	Wallet{user(login)} to User,
-    Repository{user(login)} to User,
-    Repository{transaction(id)} to Transaction
+    Wallet{user(login)} to User,
+    File{user(login)} to User,
+    File{transaction(id)} to Transaction,
+    Transaction{user(login)} to User
 }
 
 
