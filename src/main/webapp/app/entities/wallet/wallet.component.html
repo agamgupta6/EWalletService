@@ -1,0 +1,72 @@
+<div>
+    <h2 id="page-heading">
+        <span>Wallets</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-wallet" [routerLink]="['/wallet/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span >
+            Create new Wallet
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="table-responsive" *ngIf="wallets">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+            <th><span>ID</span></th>
+            <th><span>Number</span></th>
+            <th><span>Date</span></th>
+            <th><span>Identification</span></th>
+            <th><span>Mobile</span></th>
+            <th><span>Email</span></th>
+            <th><span>Money</span></th>
+            <th><span>Account</span></th>
+            <th><span>Status</span></th>
+            <th><span>User</span></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let wallet of wallets ;trackBy: trackId">
+                <td><a [routerLink]="['/wallet', wallet.id, 'view' ]">{{wallet.id}}</a></td>
+                <td>{{wallet.number}}</td>
+                <td>{{wallet.date | date:'medium'}}</td>
+                <td>{{wallet.identification}}</td>
+                <td>{{wallet.mobile}}</td>
+                <td>{{wallet.email}}</td>
+                <td>{{wallet.money}}</td>
+                <td>{{wallet.account}}</td>
+                <td>{{wallet.status}}</td>
+                <td>
+                    {{wallet.user?.login}}
+                </td>
+                <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['/wallet', wallet.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/wallet', wallet.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'wallet/'+ wallet.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

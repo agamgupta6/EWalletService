@@ -38,6 +38,9 @@ public class CacheConfiguration {
             cm.createCache(com.pichincha.domain.User.class.getName(), jcacheConfiguration);
             cm.createCache(com.pichincha.domain.Authority.class.getName(), jcacheConfiguration);
             cm.createCache(com.pichincha.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+            cm.createCache(com.pichincha.domain.Wallet.class.getName(), jcacheConfiguration);
+            cm.createCache(com.pichincha.domain.File.class.getName(), jcacheConfiguration);
+            cm.createCache(com.pichincha.domain.Transaction.class.getName(), jcacheConfiguration);
             // jhipster-needle-ehcache-add-entry
         };
     }

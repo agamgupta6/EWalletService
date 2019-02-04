@@ -1,0 +1,110 @@
+<div class="row justify-content-center">
+    <div class="col-8">
+        <form name="editForm" role="form" novalidate (ngSubmit)="save()" #editForm="ngForm">
+            <h2 id="jhi-wallet-heading">Create or edit a Wallet</h2>
+            <div>
+                <jhi-alert-error></jhi-alert-error>
+                <div class="form-group" [hidden]="!wallet.id">
+                    <label for="id">ID</label>
+                    <input type="text" class="form-control" id="id" name="id"
+                        [(ngModel)]="wallet.id" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_number">Number</label>
+                    <input type="text" class="form-control" name="number" id="field_number"
+                        [(ngModel)]="wallet.number" required/>
+                    <div [hidden]="!(editForm.controls.number?.dirty && editForm.controls.number?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.number?.errors?.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_date">Date</label>
+                    <div class="d-flex">
+                        <input id="field_date" type="datetime-local" class="form-control" name="date" [(ngModel)]="date"
+                        required/>
+                    </div>
+                    <div [hidden]="!(editForm.controls.date?.dirty && editForm.controls.date?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.date?.errors?.required">
+                        This field is required.
+                        </small>
+                        <small class="form-text text-danger"
+                            [hidden]="!editForm.controls.date?.errors?.ZonedDateTimelocal">
+                            This field should be a date and time.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_identification">Identification</label>
+                    <input type="text" class="form-control" name="identification" id="field_identification"
+                        [(ngModel)]="wallet.identification" required/>
+                    <div [hidden]="!(editForm.controls.identification?.dirty && editForm.controls.identification?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.identification?.errors?.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_mobile">Mobile</label>
+                    <input type="text" class="form-control" name="mobile" id="field_mobile"
+                        [(ngModel)]="wallet.mobile" required/>
+                    <div [hidden]="!(editForm.controls.mobile?.dirty && editForm.controls.mobile?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.mobile?.errors?.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_email">Email</label>
+                    <input type="text" class="form-control" name="email" id="field_email"
+                        [(ngModel)]="wallet.email" required/>
+                    <div [hidden]="!(editForm.controls.email?.dirty && editForm.controls.email?.invalid)">
+                        <small class="form-text text-danger"
+                        [hidden]="!editForm.controls.email?.errors?.required">
+                        This field is required.
+                        </small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_money">Money</label>
+                    <input type="number" class="form-control" name="money" id="field_money"
+                        [(ngModel)]="wallet.money" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_account">Account</label>
+                    <input type="text" class="form-control" name="account" id="field_account"
+                        [(ngModel)]="wallet.account" />
+                </div>
+                <div class="form-group">
+                    <label class="form-control-label" for="field_status">Status</label>
+                    <select class="form-control" name="status" [(ngModel)]="wallet.status" id="field_status" >
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="BLOCKED">BLOCKED</option>
+                        <option value="PROCESSING">PROCESSING</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-control-label" for="field_user">User</label>
+                    <select class="form-control" id="field_user" name="user" [(ngModel)]="wallet.user" >
+                        <option [ngValue]="null"></option>
+                        <option [ngValue]="userOption.id === wallet.user?.id ? wallet.user : userOption" *ngFor="let userOption of users; trackBy: trackUserById">{{userOption.login}}</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button type="button" id="cancel-save" class="btn btn-secondary"  (click)="previousState()">
+                    <fa-icon [icon]="'ban'"></fa-icon>&nbsp;<span>Cancel</span>
+                </button>
+                <button type="submit" id="save-entity" [disabled]="editForm.form.invalid || isSaving" class="btn btn-primary">
+                    <fa-icon [icon]="'save'"></fa-icon>&nbsp;<span>Save</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
