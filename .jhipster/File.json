@@ -1,0 +1,27 @@
+{
+    "name": "File",
+    "fields": [],
+    "relationships": [
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "user",
+            "otherEntityName": "user",
+            "otherEntityField": "login"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "transaction",
+            "otherEntityName": "transaction",
+            "otherEntityField": "id"
+        }
+    ],
+    "changelogDate": "20190203194949",
+    "entityTableName": "file",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": "*"
+}
