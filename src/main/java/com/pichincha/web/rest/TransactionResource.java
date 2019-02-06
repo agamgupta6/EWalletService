@@ -138,18 +138,26 @@ public class TransactionResource {
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
     
-    @PostMapping("/imageuploaddemo")
-   
+    @PostMapping("/registerUser")
     @Timed
-    public User imageuploaddemo(@RequestParam("details") String  details, @RequestParam("identity") Object identity, 
-    		@RequestParam("files") Object files) throws URISyntaxException, JsonParseException, JsonMappingException, IOException {
+    public User createUser(@RequestParam("details") String  details) throws URISyntaxException, JsonParseException, JsonMappingException, IOException {
     	ObjectMapper objectMapper = new ObjectMapper();
     	ManagedUserVM managedUserVM  = objectMapper.readValue(details, ManagedUserVM.class);
+    	
+		User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
+       return user;
+    }
+    
+    @PostMapping("/imageuploaddemo")
+    @Timed
+    public void uploadImage(@RequestParam("identity") Object identity, 
+    		@RequestParam("files") Object files) throws URISyntaxException, JsonParseException, JsonMappingException, IOException {
+    	ObjectMapper objectMapper = new ObjectMapper();
+    	
     	
     	log.debug("REST request to save File : {}", identity.getClass());
         log.debug("REST request to save File : {}", files.getClass());
         
-		User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
-       return user;
+       //return user;
     }
 }
