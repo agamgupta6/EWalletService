@@ -22,8 +22,10 @@ import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pichincha.domain.File;
 import com.pichincha.domain.User;
 import com.pichincha.domain.Wallet;
+import com.pichincha.repository.FileRepository;
 import com.pichincha.repository.TransactionRepository;
 import com.pichincha.repository.WalletRepository;
 import com.pichincha.security.SecurityUtils;
@@ -44,13 +46,15 @@ public class RegistrationResource {
     private final WalletRepository walletRepository;
     private final UserService userService;
     private final StorageService storageService;
-    
+    private final FileRepository fileRepository;
+
     public RegistrationResource(TransactionRepository transactionRepository, 
     		UserService userService, StorageService storageService,
-    		WalletRepository walletRepository) {
+    		WalletRepository walletRepository, FileRepository fileRepository) {
         this.userService = userService;
         this.storageService = storageService;
         this.walletRepository = walletRepository;
+        this.fileRepository = fileRepository;
     }
     
     @PostMapping("/registerUser")
@@ -70,10 +74,25 @@ public class RegistrationResource {
     		@RequestParam("user") String user,
     		@RequestParam("fileName") String fileName) throws URISyntaxException, JsonParseException, JsonMappingException, IOException {
     	
-    	Folder userFolder  = this.storageService.getUserFolder(user);
+    	ObjectMapper objectMapper = new ObjectMapper();
+    	User userDTO  = objectMapper.readValue(user, User.class);
+    	
+    	Folder userFolder  = this.storageService.getUserFolder(userDTO.getLogin());
     	String fileId  = this.storageService.uploadFile(userFolder, file, fileName); 
     	log.debug("Uploaded file id: ", fileId);
-        
+        File repofile = new File();
+        repofile.setRepositoryId(fileId);
+        repofile.setUser(userDTO);
+        // save file
+        log.debug("REST request to save File : {}", file);
+        if (repofile.getId() != null) {
+            throw new BadRequestAlertException("A new file cannot already have an ID", "file", "idexists");
+        }
+        File result = fileRepository.save(repofile);
+         ResponseEntity.created(new URI("/api/files/" + result.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert("file", result.getId().toString()))
+            .body(result);
+    
        //return user;
     }
     
@@ -97,5 +116,6 @@ public class RegistrationResource {
             .headers(HeaderUtil.createEntityCreationAlert("wallet", result.getId().toString()))
             .body(result);
     }
+    
     
 }

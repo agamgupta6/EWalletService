@@ -23,6 +23,9 @@ public class File implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "repository_id")
+    private String repositoryId;
+
     @ManyToOne
     @JsonIgnoreProperties("")
     private User user;
@@ -38,6 +41,19 @@ public class File implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
+    public File repositoryId(String repositoryId) {
+        this.repositoryId = repositoryId;
+        return this;
+    }
+
+    public void setRepositoryId(String repositoryId) {
+        this.repositoryId = repositoryId;
     }
 
     public User getUser() {
@@ -91,6 +107,7 @@ public class File implements Serializable {
     public String toString() {
         return "File{" +
             "id=" + getId() +
+            ", repositoryId='" + getRepositoryId() + "'" +
             "}";
     }
 }

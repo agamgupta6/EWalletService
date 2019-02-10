@@ -40,6 +40,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = EWalletServiceApp.class)
 public class FileResourceIntTest {
 
+    private static final String DEFAULT_REPOSITORY_ID = "AAAAAAAAAA";
+    private static final String UPDATED_REPOSITORY_ID = "BBBBBBBBBB";
+
     @Autowired
     private FileRepository fileRepository;
 
@@ -81,7 +84,8 @@ public class FileResourceIntTest {
      * if they test an entity which requires the current entity.
      */
     public static File createEntity(EntityManager em) {
-        File file = new File();
+        File file = new File()
+            .repositoryId(DEFAULT_REPOSITORY_ID);
         return file;
     }
 
@@ -105,6 +109,7 @@ public class FileResourceIntTest {
         List<File> fileList = fileRepository.findAll();
         assertThat(fileList).hasSize(databaseSizeBeforeCreate + 1);
         File testFile = fileList.get(fileList.size() - 1);
+        assertThat(testFile.getRepositoryId()).isEqualTo(DEFAULT_REPOSITORY_ID);
     }
 
     @Test
@@ -136,7 +141,8 @@ public class FileResourceIntTest {
         restFileMockMvc.perform(get("/api/files?sort=id,desc"))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(file.getId().intValue())));
+            .andExpect(jsonPath("$.[*].id").value(hasItem(file.getId().intValue())))
+            .andExpect(jsonPath("$.[*].repositoryId").value(hasItem(DEFAULT_REPOSITORY_ID.toString())));
     }
     
     @Test
@@ -149,7 +155,8 @@ public class FileResourceIntTest {
         restFileMockMvc.perform(get("/api/files/{id}", file.getId()))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.id").value(file.getId().intValue()));
+            .andExpect(jsonPath("$.id").value(file.getId().intValue()))
+            .andExpect(jsonPath("$.repositoryId").value(DEFAULT_REPOSITORY_ID.toString()));
     }
 
     @Test
@@ -172,6 +179,8 @@ public class FileResourceIntTest {
         File updatedFile = fileRepository.findById(file.getId()).get();
         // Disconnect from session so that the updates on updatedFile are not directly saved in db
         em.detach(updatedFile);
+        updatedFile
+            .repositoryId(UPDATED_REPOSITORY_ID);
 
         restFileMockMvc.perform(put("/api/files")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
@@ -182,6 +191,7 @@ public class FileResourceIntTest {
         List<File> fileList = fileRepository.findAll();
         assertThat(fileList).hasSize(databaseSizeBeforeUpdate);
         File testFile = fileList.get(fileList.size() - 1);
+        assertThat(testFile.getRepositoryId()).isEqualTo(UPDATED_REPOSITORY_ID);
     }
 
     @Test

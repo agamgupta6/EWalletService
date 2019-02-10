@@ -21,7 +21,7 @@ describe('Service Tests', () => {
             service = injector.get(FileService);
             httpMock = injector.get(HttpTestingController);
 
-            elemDefault = new File(0);
+            elemDefault = new File(0, 'AAAAAAA');
         });
 
         describe('Service methods', async () => {
@@ -53,7 +53,12 @@ describe('Service Tests', () => {
             });
 
             it('should update a File', async () => {
-                const returnedFromService = Object.assign({}, elemDefault);
+                const returnedFromService = Object.assign(
+                    {
+                        repositoryId: 'BBBBBB'
+                    },
+                    elemDefault
+                );
 
                 const expected = Object.assign({}, returnedFromService);
                 service
@@ -65,7 +70,12 @@ describe('Service Tests', () => {
             });
 
             it('should return a list of File', async () => {
-                const returnedFromService = Object.assign({}, elemDefault);
+                const returnedFromService = Object.assign(
+                    {
+                        repositoryId: 'BBBBBB'
+                    },
+                    elemDefault
+                );
                 const expected = Object.assign({}, returnedFromService);
                 service
                     .query(expected)

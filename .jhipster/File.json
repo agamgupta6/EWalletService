@@ -1,6 +1,6 @@
 {
-    "name": "File",
-    "fields": [],
+    "fluentMethods": true,
+    "clientRootFolder": "",
     "relationships": [
         {
             "relationshipType": "many-to-one",
@@ -15,13 +15,17 @@
             "otherEntityField": "id"
         }
     ],
+    "fields": [
+        {
+            "fieldName": "repositoryId",
+            "fieldType": "String"
+        }
+    ],
     "changelogDate": "20190203194949",
-    "entityTableName": "file",
     "dto": "no",
-    "pagination": "no",
+    "searchEngine": false,
     "service": "no",
+    "entityTableName": "file",
     "jpaMetamodelFiltering": false,
-    "fluentMethods": true,
-    "clientRootFolder": "",
-    "applications": "*"
+    "pagination": "no"
 }
