@@ -1,6 +1,5 @@
 package com.pichincha.web.rest;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -16,21 +15,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pichincha.domain.Transaction;
-import com.pichincha.domain.User;
 import com.pichincha.repository.TransactionRepository;
+import com.pichincha.service.StorageService;
 import com.pichincha.service.UserService;
-import com.pichincha.service.dto.UserDTO;
 import com.pichincha.web.rest.errors.BadRequestAlertException;
 import com.pichincha.web.rest.util.HeaderUtil;
-import com.pichincha.web.rest.vm.ManagedUserVM;
 
 import io.github.jhipster.web.util.ResponseUtil;
 
@@ -48,11 +41,14 @@ public class TransactionResource {
     private final TransactionRepository transactionRepository;
 
     private final UserService userService;
+    private final StorageService storageService;
     
     public TransactionResource(TransactionRepository transactionRepository, 
-    		UserService userService) {
+    		UserService userService, StorageService storageService) {
         this.transactionRepository = transactionRepository;
         this.userService = userService;
+        this.storageService = storageService;
+        
     }
 
     /**
@@ -138,26 +134,5 @@ public class TransactionResource {
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
     
-    @PostMapping("/registerUser")
-    @Timed
-    public User createUser(@RequestParam("details") String  details) throws URISyntaxException, JsonParseException, JsonMappingException, IOException {
-    	ObjectMapper objectMapper = new ObjectMapper();
-    	ManagedUserVM managedUserVM  = objectMapper.readValue(details, ManagedUserVM.class);
-    	
-		User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
-       return user;
-    }
     
-    @PostMapping("/imageuploaddemo")
-    @Timed
-    public void uploadImage(@RequestParam("identity") Object identity, 
-    		@RequestParam("files") Object files) throws URISyntaxException, JsonParseException, JsonMappingException, IOException {
-    	ObjectMapper objectMapper = new ObjectMapper();
-    	
-    	
-    	log.debug("REST request to save File : {}", identity.getClass());
-        log.debug("REST request to save File : {}", files.getClass());
-        
-       //return user;
-    }
 }
