@@ -19,6 +19,10 @@
         {
             "fieldName": "repositoryId",
             "fieldType": "String"
+        },
+        {
+            "fieldName": "demo",
+            "fieldType": "String"
         }
     ],
     "changelogDate": "20190203194949",
