@@ -26,6 +26,9 @@ public class File implements Serializable {
     @Column(name = "repository_id")
     private String repositoryId;
 
+    @Column(name = "demo")
+    private String demo;
+
     @ManyToOne
     @JsonIgnoreProperties("")
     private User user;
@@ -54,6 +57,19 @@ public class File implements Serializable {
 
     public void setRepositoryId(String repositoryId) {
         this.repositoryId = repositoryId;
+    }
+
+    public String getDemo() {
+        return demo;
+    }
+
+    public File demo(String demo) {
+        this.demo = demo;
+        return this;
+    }
+
+    public void setDemo(String demo) {
+        this.demo = demo;
     }
 
     public User getUser() {
@@ -108,6 +124,7 @@ public class File implements Serializable {
         return "File{" +
             "id=" + getId() +
             ", repositoryId='" + getRepositoryId() + "'" +
+            ", demo='" + getDemo() + "'" +
             "}";
     }
 }

@@ -3,11 +3,10 @@ package com.pichincha.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import com.pichincha.domain.Wallet;
 import com.pichincha.repository.WalletRepository;
+import com.pichincha.repository.search.WalletSearchRepository;
 import com.pichincha.web.rest.errors.BadRequestAlertException;
 import com.pichincha.web.rest.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
-
-import org.hibernate.id.GUIDGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +18,10 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing Wallet.
@@ -34,8 +36,11 @@ public class WalletResource {
 
     private final WalletRepository walletRepository;
 
-    public WalletResource(WalletRepository walletRepository) {
+    private final WalletSearchRepository walletSearchRepository;
+
+    public WalletResource(WalletRepository walletRepository, WalletSearchRepository walletSearchRepository) {
         this.walletRepository = walletRepository;
+        this.walletSearchRepository = walletSearchRepository;
     }
 
     /**
@@ -52,8 +57,8 @@ public class WalletResource {
         if (wallet.getId() != null) {
             throw new BadRequestAlertException("A new wallet cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        wallet.setNumber(UUID.randomUUID().toString());
         Wallet result = walletRepository.save(wallet);
+        walletSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/wallets/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -76,6 +81,7 @@ public class WalletResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         Wallet result = walletRepository.save(wallet);
+        walletSearchRepository.save(result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, wallet.getId().toString()))
             .body(result);
@@ -119,6 +125,24 @@ public class WalletResource {
         log.debug("REST request to delete Wallet : {}", id);
 
         walletRepository.deleteById(id);
+        walletSearchRepository.deleteById(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
+
+    /**
+     * SEARCH  /_search/wallets?query=:query : search for the wallet corresponding
+     * to the query.
+     *
+     * @param query the query of the wallet search
+     * @return the result of the search
+     */
+    @GetMapping("/_search/wallets")
+    @Timed
+    public List<Wallet> searchWallets(@RequestParam String query) {
+        log.debug("REST request to search Wallets for query {}", query);
+        return StreamSupport
+            .stream(walletSearchRepository.search(queryStringQuery(query)).spliterator(), false)
+            .collect(Collectors.toList());
+    }
+
 }

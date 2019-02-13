@@ -16,6 +16,7 @@
             <tr>
             <th><span>ID</span></th>
             <th><span>Repository Id</span></th>
+            <th><span>Demo</span></th>
             <th><span>User</span></th>
             <th><span>Transaction</span></th>
             <th></th>
@@ -25,6 +26,7 @@
             <tr *ngFor="let file of files ;trackBy: trackId">
                 <td><a [routerLink]="['/file', file.id, 'view' ]">{{file.id}}</a></td>
                 <td>{{file.repositoryId}}</td>
+                <td>{{file.demo}}</td>
                 <td>
                     {{file.user?.login}}
                 </td>

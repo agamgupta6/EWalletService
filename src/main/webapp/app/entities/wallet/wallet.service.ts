@@ -15,6 +15,7 @@ type EntityArrayResponseType = HttpResponse<IWallet[]>;
 @Injectable({ providedIn: 'root' })
 export class WalletService {
     public resourceUrl = SERVER_API_URL + 'api/wallets';
+    public resourceSearchUrl = SERVER_API_URL + 'api/_search/wallets';
 
     constructor(protected http: HttpClient) {}
 
@@ -47,6 +48,13 @@ export class WalletService {
 
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+    }
+
+    search(req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        return this.http
+            .get<IWallet[]>(this.resourceSearchUrl, { params: options, observe: 'response' })
+            .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
     }
 
     protected convertDateFromClient(wallet: IWallet): IWallet {

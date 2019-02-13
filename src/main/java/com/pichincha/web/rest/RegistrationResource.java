@@ -10,7 +10,9 @@ import javax.validation.Valid;
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,12 +25,14 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pichincha.domain.File;
+import com.pichincha.domain.FileData;
 import com.pichincha.domain.User;
 import com.pichincha.domain.Wallet;
 import com.pichincha.repository.FileRepository;
 import com.pichincha.repository.TransactionRepository;
 import com.pichincha.repository.WalletRepository;
 import com.pichincha.security.SecurityUtils;
+import com.pichincha.service.MailService;
 import com.pichincha.service.StorageService;
 import com.pichincha.service.UserService;
 import com.pichincha.web.rest.errors.BadRequestAlertException;
@@ -47,14 +51,16 @@ public class RegistrationResource {
     private final UserService userService;
     private final StorageService storageService;
     private final FileRepository fileRepository;
-
+    private final MailService mailService;
     public RegistrationResource(TransactionRepository transactionRepository, 
     		UserService userService, StorageService storageService,
-    		WalletRepository walletRepository, FileRepository fileRepository) {
+    		WalletRepository walletRepository, FileRepository fileRepository,
+    		MailService mailService) {
         this.userService = userService;
         this.storageService = storageService;
         this.walletRepository = walletRepository;
         this.fileRepository = fileRepository;
+        this.mailService = mailService;
     }
     
     @PostMapping("/registerUser")
@@ -112,9 +118,17 @@ public class RegistrationResource {
         }
         wallet.setNumber(UUID.randomUUID().toString());
         Wallet result = walletRepository.save(wallet);
+        this.mailService.sendWalletCreatedEmail(wallet);
         return ResponseEntity.created(new URI("/api/wallets/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert("wallet", result.getId().toString()))
             .body(result);
+    }
+    
+    @GetMapping(value="/getRepoFile")
+    @Timed
+    public FileData getRepoFile(@RequestParam("repoid") String id ) throws URISyntaxException, IOException {
+        log.debug("REST request to get repo file : {}", id );
+        return new FileData("something",this.storageService.getRepoFile(id))   ;        
     }
     
     

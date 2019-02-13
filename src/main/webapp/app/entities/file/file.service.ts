@@ -35,4 +35,8 @@ export class FileService {
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }
+
+    fileData(repoId: string): Observable<EntityResponseType> {
+        return this.http.get<any>(SERVER_API_URL + 'api/getRepoFile?repoid=' + repoId, { observe: 'response' });
+    }
 }

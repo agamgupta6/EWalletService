@@ -4,6 +4,7 @@ import com.pichincha.EWalletServiceApp;
 
 import com.pichincha.domain.Transaction;
 import com.pichincha.repository.TransactionRepository;
+import com.pichincha.repository.search.TransactionSearchRepository;
 import com.pichincha.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -26,13 +27,16 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.List;
 
 
 import static com.pichincha.web.rest.TestUtil.sameInstant;
 import static com.pichincha.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -61,6 +65,14 @@ public class TransactionResourceIntTest {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    /**
+     * This repository is mocked in the com.pichincha.repository.search test package.
+     *
+     * @see com.pichincha.repository.search.TransactionSearchRepositoryMockConfiguration
+     */
+    @Autowired
+    private TransactionSearchRepository mockTransactionSearchRepository;
+
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
@@ -83,7 +95,7 @@ public class TransactionResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final TransactionResource transactionResource = new TransactionResource(transactionRepository);
+        final TransactionResource transactionResource = new TransactionResource(transactionRepository, mockTransactionSearchRepository);
         this.restTransactionMockMvc = MockMvcBuilders.standaloneSetup(transactionResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -131,6 +143,9 @@ public class TransactionResourceIntTest {
         assertThat(testTransaction.getAmount()).isEqualTo(DEFAULT_AMOUNT);
         assertThat(testTransaction.getType()).isEqualTo(DEFAULT_TYPE);
         assertThat(testTransaction.getDate()).isEqualTo(DEFAULT_DATE);
+
+        // Validate the Transaction in Elasticsearch
+        verify(mockTransactionSearchRepository, times(1)).save(testTransaction);
     }
 
     @Test
@@ -150,6 +165,9 @@ public class TransactionResourceIntTest {
         // Validate the Transaction in the database
         List<Transaction> transactionList = transactionRepository.findAll();
         assertThat(transactionList).hasSize(databaseSizeBeforeCreate);
+
+        // Validate the Transaction in Elasticsearch
+        verify(mockTransactionSearchRepository, times(0)).save(transaction);
     }
 
     @Test
@@ -225,6 +243,9 @@ public class TransactionResourceIntTest {
         assertThat(testTransaction.getAmount()).isEqualTo(UPDATED_AMOUNT);
         assertThat(testTransaction.getType()).isEqualTo(UPDATED_TYPE);
         assertThat(testTransaction.getDate()).isEqualTo(UPDATED_DATE);
+
+        // Validate the Transaction in Elasticsearch
+        verify(mockTransactionSearchRepository, times(1)).save(testTransaction);
     }
 
     @Test
@@ -243,6 +264,9 @@ public class TransactionResourceIntTest {
         // Validate the Transaction in the database
         List<Transaction> transactionList = transactionRepository.findAll();
         assertThat(transactionList).hasSize(databaseSizeBeforeUpdate);
+
+        // Validate the Transaction in Elasticsearch
+        verify(mockTransactionSearchRepository, times(0)).save(transaction);
     }
 
     @Test
@@ -261,6 +285,27 @@ public class TransactionResourceIntTest {
         // Validate the database is empty
         List<Transaction> transactionList = transactionRepository.findAll();
         assertThat(transactionList).hasSize(databaseSizeBeforeDelete - 1);
+
+        // Validate the Transaction in Elasticsearch
+        verify(mockTransactionSearchRepository, times(1)).deleteById(transaction.getId());
+    }
+
+    @Test
+    @Transactional
+    public void searchTransaction() throws Exception {
+        // Initialize the database
+        transactionRepository.saveAndFlush(transaction);
+        when(mockTransactionSearchRepository.search(queryStringQuery("id:" + transaction.getId())))
+            .thenReturn(Collections.singletonList(transaction));
+        // Search the transaction
+        restTransactionMockMvc.perform(get("/api/_search/transactions?query=id:" + transaction.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(transaction.getId().intValue())))
+            .andExpect(jsonPath("$.[*].categoty").value(hasItem(DEFAULT_CATEGOTY)))
+            .andExpect(jsonPath("$.[*].amount").value(hasItem(DEFAULT_AMOUNT.doubleValue())))
+            .andExpect(jsonPath("$.[*].type").value(hasItem(DEFAULT_TYPE.toString())))
+            .andExpect(jsonPath("$.[*].date").value(hasItem(sameInstant(DEFAULT_DATE))));
     }
 
     @Test

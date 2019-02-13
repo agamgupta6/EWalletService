@@ -1,3 +1,5 @@
+import { UserMgmtDataDialogComponent } from './user-management/user-management-data-dialog.component';
+
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { EWalletServiceSharedModule } from 'app/shared';
@@ -32,6 +34,7 @@ import {
         UserMgmtDetailComponent,
         UserMgmtUpdateComponent,
         UserMgmtDeleteDialogComponent,
+        UserMgmtDataDialogComponent,
         LogsComponent,
         JhiConfigurationComponent,
         JhiHealthCheckComponent,
@@ -41,7 +44,12 @@ import {
         JhiMetricsMonitoringComponent,
         JhiMetricsMonitoringModalComponent
     ],
-    entryComponents: [UserMgmtDeleteDialogComponent, JhiHealthModalComponent, JhiMetricsMonitoringModalComponent],
+    entryComponents: [
+        UserMgmtDataDialogComponent,
+        UserMgmtDeleteDialogComponent,
+        JhiHealthModalComponent,
+        JhiMetricsMonitoringModalComponent
+    ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class EWalletServiceAdminModule {}

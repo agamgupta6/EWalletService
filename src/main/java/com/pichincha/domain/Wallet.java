@@ -7,6 +7,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
 import javax.validation.constraints.*;
 
+import org.springframework.data.elasticsearch.annotations.Document;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
@@ -19,6 +20,7 @@ import com.pichincha.domain.enumeration.WalletStatus;
 @Entity
 @Table(name = "wallet")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Document(indexName = "wallet")
 public class Wallet implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -27,6 +29,7 @@ public class Wallet implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    
     @Column(name = "jhi_number")
     private String number;
 

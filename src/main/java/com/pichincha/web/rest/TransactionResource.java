@@ -1,31 +1,26 @@
 package com.pichincha.web.rest;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.codahale.metrics.annotation.Timed;
 import com.pichincha.domain.Transaction;
 import com.pichincha.repository.TransactionRepository;
-import com.pichincha.service.StorageService;
-import com.pichincha.service.UserService;
+import com.pichincha.repository.search.TransactionSearchRepository;
 import com.pichincha.web.rest.errors.BadRequestAlertException;
 import com.pichincha.web.rest.util.HeaderUtil;
-
 import io.github.jhipster.web.util.ResponseUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing Transaction.
@@ -40,15 +35,11 @@ public class TransactionResource {
 
     private final TransactionRepository transactionRepository;
 
-    private final UserService userService;
-    private final StorageService storageService;
-    
-    public TransactionResource(TransactionRepository transactionRepository, 
-    		UserService userService, StorageService storageService) {
+    private final TransactionSearchRepository transactionSearchRepository;
+
+    public TransactionResource(TransactionRepository transactionRepository, TransactionSearchRepository transactionSearchRepository) {
         this.transactionRepository = transactionRepository;
-        this.userService = userService;
-        this.storageService = storageService;
-        
+        this.transactionSearchRepository = transactionSearchRepository;
     }
 
     /**
@@ -66,6 +57,7 @@ public class TransactionResource {
             throw new BadRequestAlertException("A new transaction cannot already have an ID", ENTITY_NAME, "idexists");
         }
         Transaction result = transactionRepository.save(transaction);
+        transactionSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/transactions/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -88,6 +80,7 @@ public class TransactionResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         Transaction result = transactionRepository.save(transaction);
+        transactionSearchRepository.save(result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, transaction.getId().toString()))
             .body(result);
@@ -131,8 +124,24 @@ public class TransactionResource {
         log.debug("REST request to delete Transaction : {}", id);
 
         transactionRepository.deleteById(id);
+        transactionSearchRepository.deleteById(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
-    
-    
+
+    /**
+     * SEARCH  /_search/transactions?query=:query : search for the transaction corresponding
+     * to the query.
+     *
+     * @param query the query of the transaction search
+     * @return the result of the search
+     */
+    @GetMapping("/_search/transactions")
+    @Timed
+    public List<Transaction> searchTransactions(@RequestParam String query) {
+        log.debug("REST request to search Transactions for query {}", query);
+        return StreamSupport
+            .stream(transactionSearchRepository.search(queryStringQuery(query)).spliterator(), false)
+            .collect(Collectors.toList());
+    }
+
 }

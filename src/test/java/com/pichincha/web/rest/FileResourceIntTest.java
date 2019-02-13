@@ -43,6 +43,9 @@ public class FileResourceIntTest {
     private static final String DEFAULT_REPOSITORY_ID = "AAAAAAAAAA";
     private static final String UPDATED_REPOSITORY_ID = "BBBBBBBBBB";
 
+    private static final String DEFAULT_DEMO = "AAAAAAAAAA";
+    private static final String UPDATED_DEMO = "BBBBBBBBBB";
+
     @Autowired
     private FileRepository fileRepository;
 
@@ -85,7 +88,8 @@ public class FileResourceIntTest {
      */
     public static File createEntity(EntityManager em) {
         File file = new File()
-            .repositoryId(DEFAULT_REPOSITORY_ID);
+            .repositoryId(DEFAULT_REPOSITORY_ID)
+            .demo(DEFAULT_DEMO);
         return file;
     }
 
@@ -110,6 +114,7 @@ public class FileResourceIntTest {
         assertThat(fileList).hasSize(databaseSizeBeforeCreate + 1);
         File testFile = fileList.get(fileList.size() - 1);
         assertThat(testFile.getRepositoryId()).isEqualTo(DEFAULT_REPOSITORY_ID);
+        assertThat(testFile.getDemo()).isEqualTo(DEFAULT_DEMO);
     }
 
     @Test
@@ -142,7 +147,8 @@ public class FileResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(file.getId().intValue())))
-            .andExpect(jsonPath("$.[*].repositoryId").value(hasItem(DEFAULT_REPOSITORY_ID.toString())));
+            .andExpect(jsonPath("$.[*].repositoryId").value(hasItem(DEFAULT_REPOSITORY_ID.toString())))
+            .andExpect(jsonPath("$.[*].demo").value(hasItem(DEFAULT_DEMO.toString())));
     }
     
     @Test
@@ -156,7 +162,8 @@ public class FileResourceIntTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.id").value(file.getId().intValue()))
-            .andExpect(jsonPath("$.repositoryId").value(DEFAULT_REPOSITORY_ID.toString()));
+            .andExpect(jsonPath("$.repositoryId").value(DEFAULT_REPOSITORY_ID.toString()))
+            .andExpect(jsonPath("$.demo").value(DEFAULT_DEMO.toString()));
     }
 
     @Test
@@ -180,7 +187,8 @@ public class FileResourceIntTest {
         // Disconnect from session so that the updates on updatedFile are not directly saved in db
         em.detach(updatedFile);
         updatedFile
-            .repositoryId(UPDATED_REPOSITORY_ID);
+            .repositoryId(UPDATED_REPOSITORY_ID)
+            .demo(UPDATED_DEMO);
 
         restFileMockMvc.perform(put("/api/files")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
@@ -192,6 +200,7 @@ public class FileResourceIntTest {
         assertThat(fileList).hasSize(databaseSizeBeforeUpdate);
         File testFile = fileList.get(fileList.size() - 1);
         assertThat(testFile.getRepositoryId()).isEqualTo(UPDATED_REPOSITORY_ID);
+        assertThat(testFile.getDemo()).isEqualTo(UPDATED_DEMO);
     }
 
     @Test

@@ -1,12 +1,14 @@
 package com.pichincha.service;
 
 import com.pichincha.domain.User;
+import com.pichincha.domain.Wallet;
 
 import io.github.jhipster.config.JHipsterProperties;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import javax.mail.internet.MimeMessage;
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,12 +86,30 @@ public class MailService {
         sendEmail(user.getEmail(), subject, content, false, true);
 
     }
+    
+    @Async
+    public void sendEmailFromTemplateWallet(Wallet wallet, String templateName, String titleKey) {
+        Locale locale = Locale.forLanguageTag("en_US");
+        Context context = new Context(locale);
+        context.setVariable(USER, wallet);
+        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+        String content = templateEngine.process(templateName, context);
+        String subject = messageSource.getMessage(titleKey, null, locale);
+        sendEmail(wallet.getEmail(), subject, content, false, true);
+
+    }
 
     @Async
     public void sendActivationEmail(User user) {
         log.debug("Sending activation email to '{}'", user.getEmail());
         sendEmailFromTemplate(user, "mail/activationEmail", "email.activation.title");
     }
+    @Async
+    public void sendWalletCreatedEmail(Wallet wallet) {
+        log.debug("Sending activation email to '{}'", wallet.getEmail());
+        sendEmailFromTemplateWallet(wallet, "mail/walletCreated.html", "email.activation.title");
+    }
+    
 
     @Async
     public void sendCreationEmail(User user) {

@@ -15,6 +15,7 @@ type EntityArrayResponseType = HttpResponse<ITransaction[]>;
 @Injectable({ providedIn: 'root' })
 export class TransactionService {
     public resourceUrl = SERVER_API_URL + 'api/transactions';
+    public resourceSearchUrl = SERVER_API_URL + 'api/_search/transactions';
 
     constructor(protected http: HttpClient) {}
 
@@ -47,6 +48,13 @@ export class TransactionService {
 
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+    }
+
+    search(req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        return this.http
+            .get<ITransaction[]>(this.resourceSearchUrl, { params: options, observe: 'response' })
+            .pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)));
     }
 
     protected convertDateFromClient(transaction: ITransaction): ITransaction {

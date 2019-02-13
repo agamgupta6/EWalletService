@@ -1,5 +1,5 @@
 <div class="row justify-content-center">
-    <div class="col-8">
+    <div class="col-6">
         <div *ngIf="user">
             <h2>
                 <span>User</span> [<b>{{user.login}}</b>]
@@ -8,10 +8,7 @@
                 <dt><span>Login</span></dt>
                 <dd>
                     <span>{{user.login}}</span>
-                    <jhi-boolean
-                        [value]="user.activated"
-                        textTrue="Activated"
-                        textFalse="Deactivated">
+                    <jhi-boolean [value]="user.activated" textTrue="Activated" textFalse="Deactivated">
                     </jhi-boolean>
                 </dd>
                 <dt><span>First Name</span></dt>
@@ -35,13 +32,30 @@
                             <span class="badge badge-info">{{authority}}</span>
                         </li>
                     </ul>
+                    <button class="btn btn-danger btn-sm" (click)="setActive(user, true)" *ngIf="!user.activated"
+                    >Deactivated</button>
+                     <button class="btn btn-success btn-sm" (click)="setActive(user, false)" *ngIf="user.activated"
+                     >Activated</button>
                 </dd>
             </dl>
-            <button type="submit"
-                    routerLink="../../"
-                    class="btn btn-info">
+            <button type="submit" routerLink="../../" class="btn btn-info">
                 <fa-icon [icon]="'arrow-left'"></fa-icon>&nbsp;<span> Back</span>
             </button>
         </div>
     </div>
+    <div class="col-6">
+        <button type="button" class="btn btn-info" (click)="getAllFileData()">
+            <fa-icon [icon]="'images'"></fa-icon>&nbsp;<span> Show User Images</span>
+        </button>
+
+
+        <div *ngFor="let data of fileData" style="margin: 15px">
+            <img [src]="'data:image/jpg;base64,'+data.data" class="img-thumbnail" 
+            style="width: 300px;">
+            <button type="button" class="btn btn-info" (click)="showImage(data)">
+                <fa-icon [icon]="'location-arrow'"></fa-icon>&nbsp;<span> Show Enlarged</span>
+            </button>
+        </div>
+    </div>
+
 </div>

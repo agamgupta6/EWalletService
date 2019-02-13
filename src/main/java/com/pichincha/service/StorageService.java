@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.client.api.Repository;
@@ -17,7 +18,9 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisNameConstraintViolationException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -77,10 +80,32 @@ public class StorageService {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put(PropertyIds.NAME, fileName);
 		properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
-
+		Document newDoc = null;
 		// create the document
-		Document newDoc = userFolder.createDocument(properties, contentStream, VersioningState.NONE);
+		try {
+			
+			newDoc = userFolder.createDocument(properties, contentStream, VersioningState.NONE);
+		} catch ( CmisNameConstraintViolationException e) {
+			  Document olddocument = (Document) session.getObjectByPath(userFolder.getPath() + "/" + fileName);
+			  olddocument.delete(true);
+			  newDoc = userFolder.createDocument(properties, contentStream, VersioningState.NONE);
+			}
 		return newDoc.getId();
 	}
 
+	public byte[] getRepoFile(String id) throws IOException{
+		CmisObject cmisObject = session.getObject(id);
+
+		if (cmisObject instanceof Document) {
+		    Document document = (Document) cmisObject;
+		    ContentStream contentStream = document.getContentStream();
+		    InputStream stream = contentStream.getStream();
+		    return IOUtils.toByteArray(stream);
+		} else {
+			return null;
+		}
+
+		
+	}
+	
 }

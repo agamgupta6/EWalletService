@@ -4,6 +4,7 @@ import com.pichincha.EWalletServiceApp;
 
 import com.pichincha.domain.Wallet;
 import com.pichincha.repository.WalletRepository;
+import com.pichincha.repository.search.WalletSearchRepository;
 import com.pichincha.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -24,12 +25,15 @@ import org.springframework.validation.Validator;
 import javax.persistence.EntityManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 
 
 import static com.pichincha.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -70,6 +74,14 @@ public class WalletResourceIntTest {
     @Autowired
     private WalletRepository walletRepository;
 
+    /**
+     * This repository is mocked in the com.pichincha.repository.search test package.
+     *
+     * @see com.pichincha.repository.search.WalletSearchRepositoryMockConfiguration
+     */
+    @Autowired
+    private WalletSearchRepository mockWalletSearchRepository;
+
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
@@ -92,7 +104,7 @@ public class WalletResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final WalletResource walletResource = new WalletResource(walletRepository);
+        final WalletResource walletResource = new WalletResource(walletRepository, mockWalletSearchRepository);
         this.restWalletMockMvc = MockMvcBuilders.standaloneSetup(walletResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -148,6 +160,9 @@ public class WalletResourceIntTest {
         assertThat(testWallet.getMoney()).isEqualTo(DEFAULT_MONEY);
         assertThat(testWallet.getAccount()).isEqualTo(DEFAULT_ACCOUNT);
         assertThat(testWallet.getStatus()).isEqualTo(DEFAULT_STATUS);
+
+        // Validate the Wallet in Elasticsearch
+        verify(mockWalletSearchRepository, times(1)).save(testWallet);
     }
 
     @Test
@@ -167,6 +182,9 @@ public class WalletResourceIntTest {
         // Validate the Wallet in the database
         List<Wallet> walletList = walletRepository.findAll();
         assertThat(walletList).hasSize(databaseSizeBeforeCreate);
+
+        // Validate the Wallet in Elasticsearch
+        verify(mockWalletSearchRepository, times(0)).save(wallet);
     }
 
     @Test
@@ -348,6 +366,9 @@ public class WalletResourceIntTest {
         assertThat(testWallet.getMoney()).isEqualTo(UPDATED_MONEY);
         assertThat(testWallet.getAccount()).isEqualTo(UPDATED_ACCOUNT);
         assertThat(testWallet.getStatus()).isEqualTo(UPDATED_STATUS);
+
+        // Validate the Wallet in Elasticsearch
+        verify(mockWalletSearchRepository, times(1)).save(testWallet);
     }
 
     @Test
@@ -366,6 +387,9 @@ public class WalletResourceIntTest {
         // Validate the Wallet in the database
         List<Wallet> walletList = walletRepository.findAll();
         assertThat(walletList).hasSize(databaseSizeBeforeUpdate);
+
+        // Validate the Wallet in Elasticsearch
+        verify(mockWalletSearchRepository, times(0)).save(wallet);
     }
 
     @Test
@@ -384,6 +408,31 @@ public class WalletResourceIntTest {
         // Validate the database is empty
         List<Wallet> walletList = walletRepository.findAll();
         assertThat(walletList).hasSize(databaseSizeBeforeDelete - 1);
+
+        // Validate the Wallet in Elasticsearch
+        verify(mockWalletSearchRepository, times(1)).deleteById(wallet.getId());
+    }
+
+    @Test
+    @Transactional
+    public void searchWallet() throws Exception {
+        // Initialize the database
+        walletRepository.saveAndFlush(wallet);
+        when(mockWalletSearchRepository.search(queryStringQuery("id:" + wallet.getId())))
+            .thenReturn(Collections.singletonList(wallet));
+        // Search the wallet
+        restWalletMockMvc.perform(get("/api/_search/wallets?query=id:" + wallet.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(wallet.getId().intValue())))
+            .andExpect(jsonPath("$.[*].number").value(hasItem(DEFAULT_NUMBER)))
+            .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
+            .andExpect(jsonPath("$.[*].identification").value(hasItem(DEFAULT_IDENTIFICATION)))
+            .andExpect(jsonPath("$.[*].mobile").value(hasItem(DEFAULT_MOBILE)))
+            .andExpect(jsonPath("$.[*].email").value(hasItem(DEFAULT_EMAIL)))
+            .andExpect(jsonPath("$.[*].money").value(hasItem(DEFAULT_MONEY.doubleValue())))
+            .andExpect(jsonPath("$.[*].account").value(hasItem(DEFAULT_ACCOUNT)))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS.toString())));
     }
 
     @Test
